@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
 pub struct ParkingVacancy {
@@ -14,6 +14,7 @@ pub struct Region {
 }
 
 #[derive(Serialize)]
+#[derive(Deserialize)]
 pub enum VacancyStatus {
     BUSY,
     FREE

@@ -11,4 +11,3 @@ chrono = "0.4.35"
 tokio = { version = "1.22.0", features = ["full"] }
 serde = { version = "1.0.149", features = ["derive"] }
 uuid = "1.7.0"
-warp = "0.3.6"
