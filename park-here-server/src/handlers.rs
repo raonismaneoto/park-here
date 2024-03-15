@@ -2,11 +2,11 @@ use axum::extract::{Path, Query};
 use axum::response::{IntoResponse, Json, Response};
 use serde::Deserialize;
 
-use crate::models::{ParkingVacancy, VacancyStatus};
-use crate::services;
+use crate::parking::vacancies::vacancy::{ParkingVacancy, VacancyStatus};
+use crate::parking::vacancies::service::{get_available_vacancies};
 
-pub async fn get_available_vacancies() -> Response {
-    Json(services::get_available_vacancies()).into_response()
+pub async fn get_available_vacancies_handler() -> Response {
+    Json(get_available_vacancies()).into_response()
 }
 
 pub async fn get_vacancy(Path(vacancy_id): Path<String>) -> Response {

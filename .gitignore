@@ -1,2 +1,4 @@
-park-here-server/target/*
+park-here-server/target
 parkhere/node_modules/*
+park-here-server/.vscode
+parkhere/.vscode
