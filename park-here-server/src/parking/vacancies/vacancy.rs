@@ -1,3 +1,4 @@
+use postgres_types::{ToSql, FromSql};
 use serde::{Deserialize, Serialize};
 use crate::regions::region::{Region};
 
@@ -11,6 +12,7 @@ pub struct ParkingVacancy {
 
 #[derive(Serialize)]
 #[derive(Deserialize)]
+#[derive(Debug, ToSql, FromSql)]
 pub enum VacancyStatus {
     BUSY,
     FREE
@@ -18,6 +20,7 @@ pub enum VacancyStatus {
 
 #[derive(Serialize)]
 #[derive(Deserialize)]
+#[derive(Debug, ToSql, FromSql)]
 pub enum VacancyType {
     CAR,
     MOTORCYCLE

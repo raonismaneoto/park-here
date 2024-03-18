@@ -1,4 +1,4 @@
-use postgres::{Client, NoTls, Error};
+use postgres::{types::ToSql, Client, Error, NoTls, Row};
 
 // create a storage structure with a new or build function which returns a mutable client and also keeps implementations
 // for the most common operations
@@ -14,7 +14,7 @@ impl Storage {
         }
     }
 
-    pub fn exec(&self, cmd: String) -> bool {
+    pub fn exec(&self, cmd: String, cmd_params: &[&(dyn ToSql + Sync)]) -> bool {
         let get_conn_result = self.get_conn();
         let mut conn;
         match get_conn_result {
@@ -22,11 +22,22 @@ impl Storage {
             Err(e) => panic!("{}", e)
         };
 
-        conn.execute(&cmd, params)
+        if let Ok(_) = conn.execute(&cmd, &[]) {
+            true
+        } else {
+            false
+        }
     }
 
-    pub fn query<T>(&self, cmd: String) -> Vec<T> {
+    pub fn query<T>(&self, cmd: String, query_params: &[&(dyn ToSql + Sync)]) -> Result<Vec<Row>, Error> {
+        let get_conn_result = self.get_conn();
+        let mut conn;
+        match get_conn_result {
+            Ok(connection) => conn = connection,
+            Err(e) => panic!("{}", e)
+        };
 
+        conn.query(&cmd, query_params)
     }
 
     fn get_conn(&self) ->  Result<Client, Error>{
