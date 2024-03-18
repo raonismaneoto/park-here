@@ -2,7 +2,9 @@ use crate::parking::vacancies::repo::VacanciesRepo;
 use crate::parking::vacancies::vacancy::{ParkingVacancy, VacancyType};
 use crate::regions::region::{Region};
 
-pub fn get_available_vacancies() -> Vec<ParkingVacancy>{
+// available vacancies are going to be the vacancies whose distance to the driver is less than or equal to radius
+// and whose status == FREE and also has the same type as the driver's vehicle
+pub fn get_available_vacancies(driver_latitude:f32, driver_longitude: f32, t: VacancyType) -> Vec<ParkingVacancy>{
     let vacancy1 = ParkingVacancy{
         id: String::from("1"),
         region: Region{

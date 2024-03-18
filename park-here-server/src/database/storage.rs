@@ -29,7 +29,7 @@ impl Storage {
         }
     }
 
-    pub fn query<T>(&self, cmd: String, query_params: &[&(dyn ToSql + Sync)]) -> Result<Vec<Row>, Error> {
+    pub fn query(&self, cmd: String, query_params: &[&(dyn ToSql + Sync)]) -> Result<Vec<Row>, Error> {
         let get_conn_result = self.get_conn();
         let mut conn;
         match get_conn_result {

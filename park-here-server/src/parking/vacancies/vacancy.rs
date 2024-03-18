@@ -1,4 +1,3 @@
-use postgres_types::{ToSql, FromSql};
 use serde::{Deserialize, Serialize};
 use crate::regions::region::{Region};
 
@@ -12,16 +11,36 @@ pub struct ParkingVacancy {
 
 #[derive(Serialize)]
 #[derive(Deserialize)]
-#[derive(Debug, ToSql, FromSql)]
+#[derive(PartialEq)]
 pub enum VacancyStatus {
     BUSY,
     FREE
 }
 
+impl From<VacancyStatus> for i32 {
+    fn from(value: VacancyStatus) -> Self {
+        if value == VacancyStatus::BUSY {
+            0
+        } else {
+            1
+        }
+    }
+}
+
 #[derive(Serialize)]
 #[derive(Deserialize)]
-#[derive(Debug, ToSql, FromSql)]
+#[derive(PartialEq)]
 pub enum VacancyType {
     CAR,
     MOTORCYCLE
+}
+
+impl From<VacancyType> for i32 {
+    fn from(value: VacancyType) -> Self {
+        if value == VacancyType::CAR {
+            0
+        } else {
+            1
+        }
+    }
 }
