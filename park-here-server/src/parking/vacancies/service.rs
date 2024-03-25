@@ -5,6 +5,7 @@ use crate::parking::vacancies::vacancy::{ParkingVacancy, VacancyType};
 use crate::regions::service::RegionsService;
 use crate::regions::region::{Region};
 use crate::app_state::AppState;
+use crate::AppError::error::AppError;
 
 struct VacanciesService {
     repo: VacanciesRepo,
@@ -22,7 +23,7 @@ impl VacanciesService {
 
     // available vacancies are going to be the vacancies whose distance to the driver is less than or equal to radius
     // and whose status == FREE and also has the same type as the driver's vehicle
-    pub fn get_available_vacancies(&self, driver_latitude:f32, driver_longitude: f32, t: VacancyType) -> Vec<ParkingVacancy> {
+    pub fn get_available_vacancies(&self, driver_latitude:f32, driver_longitude: f32, t: VacancyType) -> Result<Vec<ParkingVacancy>, Box<dyn AppError>> {
         let vacancies: Vec<ParkingVacancy> = Vec::new();
         let vacancies_result = self.repo.get_close_vacancies(500.0, driver_longitude, driver_latitude, super::vacancy::VacancyStatus::FREE, t);
         match vacancies_result {
@@ -34,7 +35,7 @@ impl VacanciesService {
                             id: row.get("id"),
                             region: vac_region,
                             status: super::vacancy::VacancyStatus::from(row.get("status")),
-                            t: super::vacancy::VacancyType::from(row.get("t") as i8)
+                            t: super::vacancy::VacancyType::from(row.get("t"))
                         });
                     }
                 }
@@ -43,5 +44,4 @@ impl VacanciesService {
             Err(err) => {} 
         }
     }
-
 }

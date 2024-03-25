@@ -6,6 +6,7 @@ pub mod regions;
 pub mod auth;
 pub mod database;
 pub mod app_state;
+pub mod AppError;
 
 use std::{error::Error, net::SocketAddr};
 

@@ -27,6 +27,16 @@ impl From<VacancyStatus> for i32 {
     }
 }
 
+impl From<i32> for VacancyStatus {
+    fn from(value: i32) -> Self {
+        if value == 0 {
+            VacancyStatus::FREE
+        } else {
+            VacancyStatus::BUSY
+        }
+    }
+}
+
 #[derive(Serialize)]
 #[derive(Deserialize)]
 #[derive(PartialEq)]
@@ -41,6 +51,16 @@ impl From<VacancyType> for i32 {
             0
         } else {
             1
+        }
+    }
+}
+
+impl From<i32> for VacancyType {
+    fn from(value: i32) -> Self {
+        if value == 0 {
+            VacancyType::CAR
+        } else {
+            VacancyType::MOTORCYCLE
         }
     }
 }
