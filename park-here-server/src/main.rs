@@ -5,6 +5,7 @@ pub mod parking;
 pub mod regions;
 pub mod auth;
 pub mod database;
+pub mod app_state;
 
 use std::{error::Error, net::SocketAddr};
 
