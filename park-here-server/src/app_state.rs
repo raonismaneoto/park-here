@@ -13,10 +13,10 @@ pub struct AppState {
 impl AppState {
     pub fn build() -> Self {
         let storage = Storage::new(
-            String::from(""),
-            String::from(""),
-            String::from(""),
-            String::from(""),
+            String::from("localhost"),
+            String::from("postgres"),
+            String::from("postgres"),
+            String::from("park-here-123"),
         );
         let regions_service = RegionsService::new(storage.clone());
         let vacancies_service = VacanciesService::new(regions_service.clone(), storage.clone());

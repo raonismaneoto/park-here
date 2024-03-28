@@ -11,7 +11,7 @@ impl RegionRepo {
         Self { storage: storage }
     }
 
-    pub fn get_region(&self, id: String) -> Result<Vec<Row>, Error> {
+    pub async fn get_region(&self, id: String) -> Result<Vec<Row>, Error> {
         let cmd = String::from(
             "
             SELECT *
@@ -21,10 +21,10 @@ impl RegionRepo {
                 id = $1;",
         );
 
-        self.storage.query(cmd, &[&id])
+        self.storage.query(cmd, &[&id]).await
     }
 
-    pub fn save_region(&self, id: String, latitude: f32, longitude: f32) -> bool {
+    pub async fn save_region(&self, id: String, latitude: f32, longitude: f32) -> bool {
         let cmd = String::from(
             "INSERT INTO
                 Region 
@@ -33,6 +33,6 @@ impl RegionRepo {
                     ($1, $2, $3);",
         );
 
-        self.storage.exec(cmd, &[&id, &latitude, &longitude])
+        self.storage.exec(cmd, &[&id, &latitude, &longitude]).await
     }
 }

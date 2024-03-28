@@ -1,54 +1,71 @@
-use postgres::{types::ToSql, Client, Error, NoTls, Row};
+use postgres_types::ToSql;
+use tokio_postgres::{NoTls, Error, Row};
 
 // create a storage structure with a new or build function which returns a mutable client and also keeps implementations
 // for the most common operations
 
 #[derive(Clone)]
 pub struct Storage {
-    connectionString: String,
+    connection_string: String,
 }
 
 impl Storage {
     pub fn new(host: String, database: String, user: String, passwd: String) -> Self {
         Self {
-            connectionString: String::from(format!(
-                "host={} database={} user={} password={}",
+            connection_string: String::from(format!(
+                "host={} dbname={} user={} password={}",
                 host, database, user, passwd
             )),
         }
     }
 
-    pub fn exec(&self, cmd: String, cmd_params: &[&(dyn ToSql + Sync)]) -> bool {
-        let get_conn_result = self.get_conn();
-        let mut conn;
-        match get_conn_result {
-            Ok(connection) => conn = connection,
-            Err(e) => panic!("{}", e),
-        };
+    pub async fn exec(&self, cmd: String, cmd_params: &[&(dyn ToSql + Sync)]) -> bool {
+        let connection_result =
+        tokio_postgres::connect(&self.connection_string, NoTls).await;
 
-        if let Ok(_) = conn.execute(&cmd, &[]) {
-            true
-        } else {
-            false
+        match connection_result {
+            Ok((client, connection)) => {
+                tokio::spawn(async move {
+                    if let Err(e) = connection.await {
+                        eprintln!("connection error: {}", e);
+                    }
+                });
+
+                if let Ok(_) = client.execute(&cmd, &cmd_params).await {
+                    true
+                } else {
+                    false
+                }
+            },
+            Err(err) => {
+                print!("{}", err);
+                false
+            }
         }
     }
 
-    pub fn query(
+    pub async fn query(
         &self,
         cmd: String,
         query_params: &[&(dyn ToSql + Sync)],
     ) -> Result<Vec<Row>, Error> {
-        let get_conn_result = self.get_conn();
-        let mut conn;
-        match get_conn_result {
-            Ok(connection) => conn = connection,
-            Err(e) => panic!("{}", e),
-        };
+        let connection_result =
+        tokio_postgres::connect(&self.connection_string, NoTls).await;
 
-        conn.query(&cmd, query_params)
-    }
+        match connection_result {
+            Ok((client, connection)) => {
+                tokio::spawn(async move {
+                    if let Err(e) = connection.await {
+                        eprintln!("connection error: {}", e);
+                    }
+                });
 
-    fn get_conn(&self) -> Result<Client, Error> {
-        Client::connect::<NoTls>(&self.connectionString, NoTls)
+                client.query(&cmd, &query_params).await
+            },
+            Err(err) => {
+                print!("{}", err);
+                Result::Err(err)
+            }
+        }
     }
 }

@@ -14,7 +14,7 @@ impl VacanciesRepo {
         VacanciesRepo { storage: storage }
     }
 
-    pub fn save_vacancy(&self, vacancy: ParkingVacancy) -> bool {
+    pub async fn save_vacancy(&self, vacancy: ParkingVacancy) -> bool {
         let cmd = String::from(
             "INSERT INTO
                 Parking_Vacancy 
@@ -31,10 +31,10 @@ impl VacanciesRepo {
                 &i32::from(vacancy.t),
                 &vacancy.region.id,
             ],
-        )
+        ).await
     }
 
-    pub fn get_vacancy_by_id(&self, id: String) -> Result<Vec<Row>, Error> {
+    pub async fn get_vacancy_by_id(&self, id: String) -> Result<Vec<Row>, Error> {
         let cmd = String::from(
             "
             SELECT *
@@ -44,10 +44,10 @@ impl VacanciesRepo {
                 id = $1;",
         );
 
-        self.storage.query(cmd, &[&id])
+        self.storage.query(cmd, &[&id]).await
     }
 
-    pub fn get_vacancy_by_status_and_type(
+    pub async fn get_vacancy_by_status_and_type(
         &self,
         status: VacancyStatus,
         t: VacancyType,
@@ -62,10 +62,10 @@ impl VacanciesRepo {
         );
 
         self.storage
-            .query(cmd, &[&i32::from(status), &i32::from(t)])
+            .query(cmd, &[&i32::from(status), &i32::from(t)]).await
     }
 
-    pub fn get_close_vacancies(
+    pub async fn get_close_vacancies(
         &self,
         radius: f32,
         longitude: f32,
@@ -97,6 +97,6 @@ impl VacanciesRepo {
                 &i32::from(t),
                 &radius,
             ],
-        )
+        ).await
     }
 }

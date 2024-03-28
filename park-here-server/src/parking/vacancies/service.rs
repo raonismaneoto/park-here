@@ -22,7 +22,7 @@ impl VacanciesService {
 
     // available vacancies are going to be the vacancies whose distance to the driver is less than or equal to radius
     // and whose status == FREE and also has the same type as the driver's vehicle
-    pub fn get_available_vacancies(
+    pub async fn get_available_vacancies(
         &self,
         driver_latitude: f32,
         driver_longitude: f32,
@@ -35,11 +35,12 @@ impl VacanciesService {
             driver_latitude,
             super::vacancy::VacancyStatus::FREE,
             t,
-        );
+        ).await;
+
         match vacancies_result {
             Ok(rows) => {
                 for row in rows.into_iter() {
-                    let maybe_vac_region = self.regions_service.get_region(row.get("region"));
+                    let maybe_vac_region = self.regions_service.get_region(row.get("region")).await;
                     if let Some(vac_region) = maybe_vac_region {
                         let status: i32 = row.get("status");
                         let t: i32 = row.get("t");

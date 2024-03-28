@@ -13,3 +13,4 @@ serde = { version = "1.0.149", features = ["derive"] }
 uuid = "1.7.0"
 postgres = "0.19.7"
 postgres-types = { version = "0.2.6", features = ["derive"] }
+tokio-postgres = "0.7.10"

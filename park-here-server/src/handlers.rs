@@ -72,7 +72,7 @@ pub async fn search_vacancies_handler(
         latitute,
         longitude,
         VacancyType::from(t),
-    );
+    ).await;
     match maybe_vacancies {
         Ok(vacancies) => Json(vacancies).into_response(),
         Err(err) => Json(err.message()).into_response(),

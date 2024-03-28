@@ -14,8 +14,8 @@ impl RegionsService {
         }
     }
 
-    pub fn get_region(&self, region_id: String) -> Option<Region> {
-        let region_query_result = self.repo.get_region(region_id.clone());
+    pub async fn get_region(&self, region_id: String) -> Option<Region> {
+        let region_query_result = self.repo.get_region(region_id.clone()).await;
         match region_query_result {
             Ok(regions) => Option::Some(Region {
                 latitude: regions.first()?.get("latitude"),
