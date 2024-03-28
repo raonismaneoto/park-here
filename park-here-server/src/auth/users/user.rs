@@ -4,5 +4,5 @@ use serde::Serialize;
 pub struct User {
     pub vehicles_ids: Vec<String>,
     pub id: String,
-    pub name: String
+    pub name: String,
 }

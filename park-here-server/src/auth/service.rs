@@ -11,7 +11,7 @@ impl AuthService {
         User {
             id: String::from(""),
             vehicles_ids: vec![String::from("")],
-            name: String::from("")
+            name: String::from(""),
         }
     }
 }

@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes: 
       - db:/var/lib/postgresql/data
-      # - ./backend/storage/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./src/database/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
 volumes:
   db:
     driver: local

@@ -1,3 +1,3 @@
 pub mod region;
-pub mod service;
 mod repo;
+pub mod service;

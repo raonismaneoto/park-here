@@ -1,56 +1,80 @@
-use axum::extract::{Path, Query};
+use std::sync::Arc;
+
+use axum::extract::{Path, Query, State};
 use axum::response::{IntoResponse, Json, Response};
 use serde::Deserialize;
 
-use crate::parking::vacancies::vacancy::{ParkingVacancy, VacancyStatus};
-use crate::parking::vacancies::service::{get_available_vacancies};
-
-pub async fn get_available_vacancies_handler() -> Response {
-    Json(get_available_vacancies()).into_response()
-}
-
-pub async fn get_vacancy(Path(vacancy_id): Path<String>) -> Response {
-    Json("").into_response()
-}
+use crate::app_state::AppState;
+use crate::parking::vacancies::vacancy::{VacancyStatus, VacancyType};
 
 #[derive(Deserialize)]
 pub struct CreateVacancy {
     latitude: f32,
     longitude: f32,
     id: String,
-    status: VacancyStatus
-}
-
-pub async fn create_vacancy(Json(payload): Json<CreateVacancy>) -> Response {
-    Json("").into_response()
+    status: VacancyStatus,
 }
 
 #[derive(Deserialize)]
 pub struct PatchVacancy {
     latitude: Option<f32>,
     longitude: Option<f32>,
-    status: Option<VacancyStatus>
+    status: Option<VacancyStatus>,
+}
+#[derive(Deserialize)]
+pub struct SearchParams {
+    latitude: f32,
+    longitude: f32,
+    radius: i32,
+    vacancy_type: String,
 }
 
-pub async fn patch_vacancy(Path(vacancy_id): Path<String>, Json(payload): Json<PatchVacancy>) -> Response {
-    let a  = match payload.latitude {
+pub async fn get_available_vacancies_handler(State(app_state): State<Arc<AppState>>) -> Response {
+    Json("").into_response()
+}
+
+pub async fn get_vacancy(
+    State(app_state): State<Arc<AppState>>,
+    Path(vacancy_id): Path<String>,
+) -> Response {
+    Json("").into_response()
+}
+
+pub async fn create_vacancy(
+    State(app_state): State<Arc<AppState>>,
+    Json(payload): Json<CreateVacancy>,
+) -> Response {
+    Json("").into_response()
+}
+
+pub async fn patch_vacancy(
+    State(app_state): State<Arc<AppState>>,
+    Path(vacancy_id): Path<String>,
+    Json(payload): Json<PatchVacancy>,
+) -> Response {
+    let a = match payload.latitude {
         Some(latitude) => "",
-        None => "print!"
+        None => "print!",
     };
 
     Json("").into_response()
 }
 
-#[derive(Deserialize)]
-pub struct SearchParams {
-    latitute: f32,
-    longitude: f32,
-    radius: i32
-}
-
-pub async fn search_vacancies(params: Query<SearchParams>) -> Response {
-    let latitute = params.latitute;
+pub async fn search_vacancies_handler(
+    State(app_state): State<Arc<AppState>>,
+    params: Query<SearchParams>,
+) -> Response {
+    let latitute = params.latitude;
     let longitude = params.longitude;
     let radius = params.radius;
-    Json("").into_response()
+    let t = params.vacancy_type.clone();
+    let maybe_vacancies = app_state.vacancies_service.get_available_vacancies(
+        latitute,
+        longitude,
+        VacancyType::from(t),
+    );
+    match maybe_vacancies {
+        Ok(vacancies) => Json(vacancies).into_response(),
+        Err(err) => Json(err.message()).into_response(),
+    }
 }

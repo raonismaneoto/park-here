@@ -1,3 +1,3 @@
-pub mod vacancy;
-pub mod service;
 mod repo;
+pub mod service;
+pub mod vacancy;

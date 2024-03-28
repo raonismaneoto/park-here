@@ -1,20 +1,18 @@
+use crate::regions::region::Region;
 use serde::{Deserialize, Serialize};
-use crate::regions::region::{Region};
 
 #[derive(Serialize)]
 pub struct ParkingVacancy {
     pub region: Region,
     pub id: String,
     pub status: VacancyStatus,
-    pub t: VacancyType
+    pub t: VacancyType,
 }
 
-#[derive(Serialize)]
-#[derive(Deserialize)]
-#[derive(PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq)]
 pub enum VacancyStatus {
     BUSY,
-    FREE
+    FREE,
 }
 
 impl From<VacancyStatus> for i32 {
@@ -30,19 +28,17 @@ impl From<VacancyStatus> for i32 {
 impl From<i32> for VacancyStatus {
     fn from(value: i32) -> Self {
         if value == 0 {
-            VacancyStatus::FREE
-        } else {
             VacancyStatus::BUSY
+        } else {
+            VacancyStatus::FREE
         }
     }
 }
 
-#[derive(Serialize)]
-#[derive(Deserialize)]
-#[derive(PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq)]
 pub enum VacancyType {
     CAR,
-    MOTORCYCLE
+    MOTORCYCLE,
 }
 
 impl From<VacancyType> for i32 {
@@ -58,6 +54,16 @@ impl From<VacancyType> for i32 {
 impl From<i32> for VacancyType {
     fn from(value: i32) -> Self {
         if value == 0 {
+            VacancyType::CAR
+        } else {
+            VacancyType::MOTORCYCLE
+        }
+    }
+}
+
+impl From<String> for VacancyType {
+    fn from(value: String) -> Self {
+        if value == String::from("car") {
             VacancyType::CAR
         } else {
             VacancyType::MOTORCYCLE

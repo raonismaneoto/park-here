@@ -1,15 +1,14 @@
-use postgres::{Row, Error};
-use crate::database::storage::{Storage};
+use crate::database::storage::Storage;
+use postgres::{Error, Row};
 
+#[derive(Clone)]
 pub struct RegionRepo {
-    storage: Storage
+    storage: Storage,
 }
 
 impl RegionRepo {
     pub fn new(storage: Storage) -> Self {
-        Self {
-            storage: storage
-        }
+        Self { storage: storage }
     }
 
     pub fn get_region(&self, id: String) -> Result<Vec<Row>, Error> {
@@ -19,7 +18,7 @@ impl RegionRepo {
             FROM 
                 Region 
             WHERE
-                id = $1;"
+                id = $1;",
         );
 
         self.storage.query(cmd, &[&id])
@@ -31,7 +30,7 @@ impl RegionRepo {
                 Region 
                     (id, latitude, longitude)
                 VALUES
-                    ($1, $2, $3);"
+                    ($1, $2, $3);",
         );
 
         self.storage.exec(cmd, &[&id, &latitude, &longitude])
