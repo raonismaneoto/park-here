@@ -67,25 +67,25 @@ impl VacanciesRepo {
 
     pub async fn get_close_vacancies(
         &self,
-        radius: f32,
-        longitude: f32,
-        latitude: f32,
+        radius: f64,
+        longitude: f64,
+        latitude: f64,
         status: VacancyStatus,
         t: VacancyType,
     ) -> Result<Vec<Row>, Error> {
         let cmd = String::from(
             "
             SELECT 
-                ST_DistanceSphere(
-                    ST_MakePoint(Parking_Vacancy.longitude, $1),
-                    ST_MakePoint(Parking_Vacancy.latitude, $2)
-                ) AS distance_in_m, *
+                *
             FROM 
                 Parking_Vacancy
             WHERE 
                 v_status = $3
                 AND t = $4
-                AND distance_in_m <= $5;",
+                AND (ST_DistanceSphere(
+                    ST_MakePoint((SELECT longitude FROM region where id = Parking_Vacancy.region_id), (SELECT latitude FROM region where id = Parking_Vacancy.region_id)),
+                    ST_MakePoint($1, $2)
+                )) <= $5;",
         );
 
         self.storage.query(

@@ -24,7 +24,7 @@ impl RegionRepo {
         self.storage.query(cmd, &[&id]).await
     }
 
-    pub async fn save_region(&self, id: String, latitude: f32, longitude: f32) -> bool {
+    pub async fn save_region(&self, id: String, latitude: f64, longitude: f64) -> bool {
         let cmd = String::from(
             "INSERT INTO
                 Region 

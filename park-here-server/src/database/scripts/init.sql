@@ -1,7 +1,7 @@
 create table region(
     id varchar(255),
-    latitude float,
-    longitude float,
+    latitude double precision,
+    longitude double precision,
     primary key (id)
 );
 

@@ -24,8 +24,8 @@ impl VacanciesService {
     // and whose status == FREE and also has the same type as the driver's vehicle
     pub async fn get_available_vacancies(
         &self,
-        driver_latitude: f32,
-        driver_longitude: f32,
+        driver_latitude: f64,
+        driver_longitude: f64,
         t: VacancyType,
     ) -> Result<Vec<ParkingVacancy>, Box<dyn AppError>> {
         let mut vacancies: Vec<ParkingVacancy> = Vec::new();
@@ -40,9 +40,9 @@ impl VacanciesService {
         match vacancies_result {
             Ok(rows) => {
                 for row in rows.into_iter() {
-                    let maybe_vac_region = self.regions_service.get_region(row.get("region")).await;
+                    let maybe_vac_region = self.regions_service.get_region(row.get("region_id")).await;
                     if let Some(vac_region) = maybe_vac_region {
-                        let status: i32 = row.get("status");
+                        let status: i32 = row.get("v_status");
                         let t: i32 = row.get("t");
                         vacancies.push(ParkingVacancy {
                             id: row.get("id"),

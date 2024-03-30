@@ -9,23 +9,23 @@ use crate::parking::vacancies::vacancy::{VacancyStatus, VacancyType};
 
 #[derive(Deserialize)]
 pub struct CreateVacancy {
-    latitude: f32,
-    longitude: f32,
+    latitude: f64,
+    longitude: f64,
     id: String,
     status: VacancyStatus,
 }
 
 #[derive(Deserialize)]
 pub struct PatchVacancy {
-    latitude: Option<f32>,
-    longitude: Option<f32>,
+    latitude: Option<f64>,
+    longitude: Option<f64>,
     status: Option<VacancyStatus>,
 }
 #[derive(Deserialize)]
 pub struct SearchParams {
-    latitude: f32,
-    longitude: f32,
-    radius: i32,
+    latitude: f64,
+    longitude: f64,
+    radius: f64,
     vacancy_type: String,
 }
 
