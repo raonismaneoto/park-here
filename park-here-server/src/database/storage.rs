@@ -1,5 +1,5 @@
 use postgres_types::ToSql;
-use tokio_postgres::{NoTls, Error, Row};
+use tokio_postgres::{Error, NoTls, Row};
 
 // create a storage structure with a new or build function which returns a mutable client and also keeps implementations
 // for the most common operations
@@ -20,8 +20,7 @@ impl Storage {
     }
 
     pub async fn exec(&self, cmd: String, cmd_params: &[&(dyn ToSql + Sync)]) -> bool {
-        let connection_result =
-        tokio_postgres::connect(&self.connection_string, NoTls).await;
+        let connection_result = tokio_postgres::connect(&self.connection_string, NoTls).await;
 
         match connection_result {
             Ok((client, connection)) => {
@@ -36,7 +35,7 @@ impl Storage {
                 } else {
                     false
                 }
-            },
+            }
             Err(err) => {
                 print!("{}", err);
                 false
@@ -49,8 +48,7 @@ impl Storage {
         cmd: String,
         query_params: &[&(dyn ToSql + Sync)],
     ) -> Result<Vec<Row>, Error> {
-        let connection_result =
-        tokio_postgres::connect(&self.connection_string, NoTls).await;
+        let connection_result = tokio_postgres::connect(&self.connection_string, NoTls).await;
 
         match connection_result {
             Ok((client, connection)) => {
@@ -61,7 +59,7 @@ impl Storage {
                 });
 
                 client.query(&cmd, &query_params).await
-            },
+            }
             Err(err) => {
                 print!("{}", err);
                 Result::Err(err)

@@ -23,15 +23,17 @@ impl VacanciesRepo {
                     ($1, $2, $3, $4);",
         );
 
-        self.storage.exec(
-            cmd,
-            &[
-                &vacancy.id,
-                &i32::from(vacancy.status),
-                &i32::from(vacancy.t),
-                &vacancy.region.id,
-            ],
-        ).await
+        self.storage
+            .exec(
+                cmd,
+                &[
+                    &vacancy.id,
+                    &i32::from(vacancy.status),
+                    &i32::from(vacancy.t),
+                    &vacancy.region.id,
+                ],
+            )
+            .await
     }
 
     pub async fn get_vacancy_by_id(&self, id: String) -> Result<Vec<Row>, Error> {
@@ -62,7 +64,8 @@ impl VacanciesRepo {
         );
 
         self.storage
-            .query(cmd, &[&i32::from(status), &i32::from(t)]).await
+            .query(cmd, &[&i32::from(status), &i32::from(t)])
+            .await
     }
 
     pub async fn get_close_vacancies(
@@ -88,15 +91,17 @@ impl VacanciesRepo {
                 )) <= $5;",
         );
 
-        self.storage.query(
-            cmd,
-            &[
-                &longitude,
-                &latitude,
-                &i32::from(status),
-                &i32::from(t),
-                &radius,
-            ],
-        ).await
+        self.storage
+            .query(
+                cmd,
+                &[
+                    &longitude,
+                    &latitude,
+                    &i32::from(status),
+                    &i32::from(t),
+                    &radius,
+                ],
+            )
+            .await
     }
 }

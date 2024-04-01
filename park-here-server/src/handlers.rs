@@ -6,21 +6,8 @@ use serde::Deserialize;
 
 use crate::app_state::AppState;
 use crate::parking::vacancies::vacancy::{VacancyStatus, VacancyType};
+use crate::requests::payloads::{CreateVacancy, PatchVacancy};
 
-#[derive(Deserialize)]
-pub struct CreateVacancy {
-    latitude: f64,
-    longitude: f64,
-    id: String,
-    status: VacancyStatus,
-}
-
-#[derive(Deserialize)]
-pub struct PatchVacancy {
-    latitude: Option<f64>,
-    longitude: Option<f64>,
-    status: Option<VacancyStatus>,
-}
 #[derive(Deserialize)]
 pub struct SearchParams {
     latitude: f64,
@@ -68,11 +55,10 @@ pub async fn search_vacancies_handler(
     let longitude = params.longitude;
     let radius = params.radius;
     let t = params.vacancy_type.clone();
-    let maybe_vacancies = app_state.vacancies_service.get_available_vacancies(
-        latitute,
-        longitude,
-        VacancyType::from(t),
-    ).await;
+    let maybe_vacancies = app_state
+        .vacancies_service
+        .get_available_vacancies(latitute, longitude, VacancyType::from(t))
+        .await;
     match maybe_vacancies {
         Ok(vacancies) => Json(vacancies).into_response(),
         Err(err) => Json(err.message()).into_response(),

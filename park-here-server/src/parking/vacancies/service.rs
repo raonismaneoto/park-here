@@ -1,4 +1,3 @@
-use crate::app_state::AppState;
 use crate::database::storage::Storage;
 use crate::parking::vacancies::repo::VacanciesRepo;
 use crate::parking::vacancies::vacancy::{ParkingVacancy, VacancyType};
@@ -29,18 +28,22 @@ impl VacanciesService {
         t: VacancyType,
     ) -> Result<Vec<ParkingVacancy>, Box<dyn AppError>> {
         let mut vacancies: Vec<ParkingVacancy> = Vec::new();
-        let vacancies_result = self.repo.get_close_vacancies(
-            500.0,
-            driver_longitude,
-            driver_latitude,
-            super::vacancy::VacancyStatus::FREE,
-            t,
-        ).await;
+        let vacancies_result = self
+            .repo
+            .get_close_vacancies(
+                500.0,
+                driver_longitude,
+                driver_latitude,
+                super::vacancy::VacancyStatus::FREE,
+                t,
+            )
+            .await;
 
         match vacancies_result {
             Ok(rows) => {
                 for row in rows.into_iter() {
-                    let maybe_vac_region = self.regions_service.get_region(row.get("region_id")).await;
+                    let maybe_vac_region =
+                        self.regions_service.get_region(row.get("region_id")).await;
                     if let Some(vac_region) = maybe_vac_region {
                         let status: i32 = row.get("v_status");
                         let t: i32 = row.get("t");

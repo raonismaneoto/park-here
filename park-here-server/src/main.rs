@@ -6,6 +6,7 @@ pub mod database;
 mod handlers;
 pub mod parking;
 pub mod regions;
+pub mod requests;
 
 use std::sync::Arc;
 use std::{error::Error, net::SocketAddr};
