@@ -23,5 +23,5 @@ pub struct Subscription {
     pub id: String,
     pub name: String,
     pub passwd: String,
-    pub username: String
+    pub username: String,
 }

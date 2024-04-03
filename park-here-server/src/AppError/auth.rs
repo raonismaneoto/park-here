@@ -1,8 +1,8 @@
 use crate::AppError::error::AppError;
 
-enum AuthErrorStatusCode {
+pub enum AuthErrorStatusCode {
     UNAUTHORIZED = 401,
-    FORBIDDEN = 403
+    FORBIDDEN = 403,
 }
 
 impl AuthErrorStatusCode {
@@ -10,7 +10,7 @@ impl AuthErrorStatusCode {
         match *self {
             AuthErrorStatusCode::UNAUTHORIZED => 401,
             AuthErrorStatusCode::FORBIDDEN => 403,
-            _ => 500
+            _ => 500,
         }
     }
 
@@ -18,7 +18,7 @@ impl AuthErrorStatusCode {
         match *self {
             AuthErrorStatusCode::UNAUTHORIZED => String::from("Unauthorized"),
             AuthErrorStatusCode::FORBIDDEN => String::from("Forbidden"),
-            _ => String::from("Internal Server Error")
+            _ => String::from("Internal Server Error"),
         }
     }
 }
@@ -32,7 +32,10 @@ impl AppError for AuthError {
     fn message(&self) -> String {
         match self.message.clone() {
             Some(msg) => msg,
-            None => String::from(format!("Authentication error. {}", self.status_code.value_str())),
+            None => String::from(format!(
+                "Authentication error. {}",
+                self.status_code.value_str()
+            )),
         }
     }
 
@@ -44,7 +47,7 @@ impl AppError for AuthError {
         format!(
             "Error Message: {}\n Status Code: {}",
             self.message(),
-            self.status_code().value()
+            self.status_code()
         )
     }
 }

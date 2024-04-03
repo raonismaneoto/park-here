@@ -11,13 +11,14 @@ pub mod requests;
 use std::sync::Arc;
 use std::{error::Error, net::SocketAddr};
 
+use axum::middleware;
 use axum::{routing::get, routing::patch, routing::post, Router};
 
 use crate::app_state::AppState;
 
 use crate::handlers::{
     create_vacancy, get_available_vacancies_handler, get_vacancy, patch_vacancy,
-    search_vacancies_handler,
+    search_vacancies_handler, auth_handler
 };
 
 #[tokio::main(flavor = "multi_thread")]
@@ -42,6 +43,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "/api/park-here/vacancies/search",
             get(search_vacancies_handler),
         )
+        .route_layer(middleware::from_fn(auth_handler))
         .with_state(app_state);
 
     println!("listening on {}", addr);

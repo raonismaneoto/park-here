@@ -4,5 +4,5 @@ use serde::Serialize;
 pub struct Credentials {
     pub passwd: String,
     pub username: String,
-    pub user_id: String
+    pub user_id: String,
 }
