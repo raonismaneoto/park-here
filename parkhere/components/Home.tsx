@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Button, StyleSheet, View } from 'react-native';
-import { Appbar } from 'react-native-paper';
 
 const Home = ({navigation}: {navigation:any}) => {
     console.log(navigation);

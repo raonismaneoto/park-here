@@ -42,7 +42,7 @@ impl AuthRepo {
     pub async fn save_user(&self, user: User) -> bool {
         let cmd = String::from(
             "INSERT INTO
-                User 
+                app_user 
                     (id, uname)
                 VALUES
                     ($1, $2);",
@@ -92,7 +92,7 @@ impl AuthRepo {
             "
             SELECT *
             FROM 
-                User 
+                app_user 
             WHERE
                 user_id = $1;",
         );

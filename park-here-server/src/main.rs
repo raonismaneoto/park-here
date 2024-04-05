@@ -42,8 +42,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "/api/park-here/vacancies/search",
             get(search_vacancies_handler),
         )
-        .route("/api/park-here/login", get(login_handler))
-        .route("/api/park-here/subscribe", get(subscribe_handler))
+        .route("/api/park-here/login", post(login_handler))
+        .route("/api/park-here/subscribe", post(subscribe_handler))
         .route_layer(map_request_with_state(app_state.clone(), auth_handler))
         .with_state(app_state);
 

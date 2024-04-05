@@ -13,7 +13,6 @@ create table parking_vacancy(
     primary key (id)
 );
 
-
 insert into 
     region (id, latitude, longitude)
 values 
@@ -30,15 +29,25 @@ values
     ('3', 1, 1, '3'),
     ('4', 1, 1, '4');
 
-create table user(
+create table app_user(
     id varchar(255),
     uname varchar(255),
     primary key (id)
 );
 
+insert into
+    app_user (id, uname)
+values
+    ('raonismaneoto', 'raonismaneoto');
+
 create table credentials(
     passwd varchar(255),
     username varchar(255),
-    user_id varchar(255) references user(id),
+    user_id varchar(255) references app_user,
     primary key (user_id, username)
 );
+
+insert into
+    credentials (passwd, username, user_id)
+values
+    ('tst123', 'raonismaneoto', 'raonismaneoto');
