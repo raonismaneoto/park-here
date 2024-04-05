@@ -11,21 +11,20 @@ pub mod requests;
 use std::sync::Arc;
 use std::{error::Error, net::SocketAddr};
 
-use axum::middleware;
+use axum::middleware::{self, map_request_with_state};
 use axum::{routing::get, routing::patch, routing::post, Router};
+use tokio::net::TcpListener;
 
 use crate::app_state::AppState;
 
 use crate::handlers::{
-    create_vacancy, get_available_vacancies_handler, get_vacancy, patch_vacancy,
-    search_vacancies_handler, auth_handler
+    auth_handler, create_vacancy, get_available_vacancies_handler, get_vacancy, patch_vacancy,
+    search_vacancies_handler,
 };
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let app_state = Arc::new(AppState::build());
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
 
     let app = Router::new()
         .route(
@@ -43,13 +42,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "/api/park-here/vacancies/search",
             get(search_vacancies_handler),
         )
-        .route_layer(middleware::from_fn(auth_handler))
+        .route_layer(map_request_with_state(app_state.clone(), auth_handler))
         .with_state(app_state);
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    let listener = TcpListener::bind(&addr).await.unwrap();
 
     println!("listening on {}", addr);
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 

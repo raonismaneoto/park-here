@@ -19,7 +19,6 @@ pub struct PatchVacancy {
 
 #[derive(Deserialize)]
 pub struct Subscription {
-    pub vehicles_ids: Vec<String>,
     pub id: String,
     pub name: String,
     pub passwd: String,

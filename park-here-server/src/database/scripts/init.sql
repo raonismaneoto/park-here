@@ -29,3 +29,16 @@ values
     ('2', 1, 1, '2'),
     ('3', 1, 1, '3'),
     ('4', 1, 1, '4');
+
+create table user(
+    id varchar(255),
+    uname varchar(255),
+    primary key (id)
+);
+
+create table credentials(
+    passwd varchar(255),
+    username varchar(255),
+    user_id varchar(255) references user(id),
+    primary key (user_id, username)
+);

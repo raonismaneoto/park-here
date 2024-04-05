@@ -2,25 +2,29 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    database::storage::Storage,
     requests::payloads::Subscription,
     AppError::{auth::AuthError, default::DefaultAppError, error::AppError},
 };
 
 use super::{
     credentials::{self, credentials::Credentials},
-    repo,
+    repo::{self, AuthRepo},
     users::user::User,
 };
 
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 
+#[derive(Clone)]
 pub struct AuthService {
     repo: repo::AuthRepo,
 }
 
 impl AuthService {
-    fn new(repo: repo::AuthRepo) -> Self {
-        Self { repo: repo }
+    pub fn new(storage: Storage) -> Self {
+        Self {
+            repo: AuthRepo::new(storage),
+        }
     }
 
     pub async fn login(&self, credentials: Credentials) -> Result<String, Box<dyn AppError>> {
@@ -54,7 +58,7 @@ impl AuthService {
         }
     }
 
-    pub async fn authorize(&self, jwt: String, user_id: String) -> Option<Box<dyn AppError>> {
+    pub async fn authorize(&self, jwt: String) -> Result<User, Box<dyn AppError>> {
         let decoded = decode::<JWTPayload>(
             &jwt,
             &DecodingKey::from_secret(JWT_SECRET),
@@ -62,18 +66,9 @@ impl AuthService {
         );
 
         match decoded {
-            Ok(payload) => {
-                if payload.claims.sub == user_id {
-                    None
-                } else {
-                    Some(Box::new(AuthError {
-                        message: Some(String::from("Invalid token error")),
-                        status_code: crate::AppError::auth::AuthErrorStatusCode::UNAUTHORIZED,
-                    }))
-                }
-            }
-            Err(err) => Some(Box::new(AuthError {
-                message: Some(String::from("Error decoding the token")),
+            Ok(jwt) => self.repo.get_user(jwt.claims.sub).await,
+            Err(err) => Err(Box::new(AuthError {
+                message: Some(String::from("Unauthorized. Invalid Token")),
                 status_code: crate::AppError::auth::AuthErrorStatusCode::UNAUTHORIZED,
             })),
         }
@@ -86,7 +81,6 @@ impl AuthService {
         let user = User {
             id: subscription_payload.id.clone(),
             name: subscription_payload.name.clone(),
-            vehicles_ids: subscription_payload.vehicles_ids.clone(),
         };
 
         let credentials = Credentials {
@@ -95,7 +89,22 @@ impl AuthService {
             user_id: subscription_payload.id.clone(),
         };
 
-        Ok(user)
+        let successfully_saved_user = self.repo.save_user(user.clone()).await;
+
+        let successfully_saved_credentials = self.repo.save_credentials(credentials).await;
+
+        if ! (successfully_saved_credentials && successfully_saved_user) {
+            Err(
+                Box::new(
+                    DefaultAppError {
+                        message: Some(String::from("unable to save user data")),
+                        status_code: 500
+                    }
+                )
+            )
+        } else {
+            Ok(user)
+        }
     }
 }
 

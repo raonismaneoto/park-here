@@ -1,8 +1,7 @@
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct User {
-    pub vehicles_ids: Vec<String>,
     pub id: String,
     pub name: String,
 }

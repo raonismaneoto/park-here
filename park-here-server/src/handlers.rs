@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
-use axum::extract::{Path, Query, State};
-use axum::http::{Request, StatusCode};
+use axum::extract::{Path, Query, Request, State};
+use axum::http::{header, StatusCode};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Json, Response};
+use axum::RequestExt;
 use serde::Deserialize;
 
 use crate::app_state::AppState;
@@ -68,21 +69,26 @@ pub async fn search_vacancies_handler(
     }
 }
 
-pub async fn auth_handler(app_state: AppState, mut req: Request, next: Next) -> Result<Response, StatusCode> {
-    let auth_header = req.headers()
-        .get(http::header::AUTHORIZATION)
+pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Request) -> Request {
+    let auth_header = req
+        .headers()
+        .get(header::AUTHORIZATION)
         .and_then(|header| header.to_str().ok());
 
-    let auth_header = if let Some(auth_header) = auth_header {
-        auth_header
-    } else {
-        return Err(StatusCode::UNAUTHORIZED);
+    let auth_header = match auth_header {
+        Some(v) => v,
+        None => return req,
     };
 
-    if let Some(current_user) = authorize_current_user(auth_header).await {
-        req.extensions_mut().insert(current_user);
-        Ok(next.run(req).await)
-    } else {
-        Err(StatusCode::UNAUTHORIZED)
+    match app_state
+        .auth_service
+        .authorize(auth_header.to_string())
+        .await
+    {
+        Ok(user) => {
+            req.extensions_mut().insert(user);
+            req
+        }
+        Err(err) => req,
     }
 }
