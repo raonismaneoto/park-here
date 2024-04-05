@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, Request, State};
-use axum::http::{header, StatusCode};
-use axum::middleware::Next;
+use axum::http::header;
 use axum::response::{IntoResponse, Json, Response};
-use axum::RequestExt;
 use serde::Deserialize;
 
 use crate::app_state::AppState;
-use crate::parking::vacancies::vacancy::{VacancyStatus, VacancyType};
-use crate::requests::payloads::{CreateVacancy, PatchVacancy};
+use crate::parking::vacancies::vacancy::VacancyType;
+use crate::requests::payloads::{CreateVacancy, LoginPayload, PatchVacancy, SubscriptionPayload};
 
 #[derive(Deserialize)]
 pub struct SearchParams {
@@ -54,7 +52,6 @@ pub async fn search_vacancies_handler(
     State(app_state): State<Arc<AppState>>,
     params: Query<SearchParams>,
 ) -> Response {
-    print!("received");
     let latitute = params.latitude;
     let longitude = params.longitude;
     let radius = params.radius;
@@ -70,6 +67,12 @@ pub async fn search_vacancies_handler(
 }
 
 pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Request) -> Request {
+    if req.uri().path().contains("/api/park-here/login")
+        || req.uri().path().contains("/api/park-here/subscribe")
+    {
+        return req;
+    }
+
     let auth_header = req
         .headers()
         .get(header::AUTHORIZATION)
@@ -90,5 +93,29 @@ pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Reque
             req
         }
         Err(err) => req,
+    }
+}
+
+pub async fn login_handler(
+    State(app_state): State<Arc<AppState>>,
+    Json(payload): Json<LoginPayload>,
+) -> Response {
+    let login_result = app_state.auth_service.login(payload).await;
+
+    match login_result {
+        Ok(jwt) => Json(jwt).into_response(),
+        Err(err) => Json(err.message()).into_response(),
+    }
+}
+
+pub async fn subscribe_handler(
+    State(app_state): State<Arc<AppState>>,
+    Json(payload): Json<SubscriptionPayload>,
+) -> Response {
+    let sub_result = app_state.auth_service.subscribe(payload).await;
+
+    match sub_result {
+        Ok(user) => Json(user).into_response(),
+        Err(err) => Json(err.message()).into_response(),
     }
 }

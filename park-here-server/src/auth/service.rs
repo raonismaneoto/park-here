@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     database::storage::Storage,
-    requests::payloads::Subscription,
+    requests::payloads::{LoginPayload, SubscriptionPayload},
     AppError::{auth::AuthError, default::DefaultAppError, error::AppError},
 };
 
@@ -27,15 +27,11 @@ impl AuthService {
         }
     }
 
-    pub async fn login(&self, credentials: Credentials) -> Result<String, Box<dyn AppError>> {
-        match self
-            .repo
-            .get_user_credentials(credentials.user_id.clone())
-            .await
-        {
+    pub async fn login(&self, credentials: LoginPayload) -> Result<String, Box<dyn AppError>> {
+        match self.repo.get_user_credentials(credentials.id.clone()).await {
             Ok(creds) => {
                 if creds.username == credentials.username && creds.passwd == credentials.passwd {
-                    match create_jwt(credentials.user_id) {
+                    match create_jwt(credentials.id) {
                         Ok(jwt) => Ok(jwt),
                         Err(err) => Err(Box::new(AuthError {
                             message: err.message,
@@ -76,7 +72,7 @@ impl AuthService {
 
     pub async fn subscribe(
         &self,
-        subscription_payload: Subscription,
+        subscription_payload: SubscriptionPayload,
     ) -> Result<User, Box<dyn AppError>> {
         let user = User {
             id: subscription_payload.id.clone(),
@@ -93,15 +89,11 @@ impl AuthService {
 
         let successfully_saved_credentials = self.repo.save_credentials(credentials).await;
 
-        if ! (successfully_saved_credentials && successfully_saved_user) {
-            Err(
-                Box::new(
-                    DefaultAppError {
-                        message: Some(String::from("unable to save user data")),
-                        status_code: 500
-                    }
-                )
-            )
+        if !(successfully_saved_credentials && successfully_saved_user) {
+            Err(Box::new(DefaultAppError {
+                message: Some(String::from("unable to save user data")),
+                status_code: 500,
+            }))
         } else {
             Ok(user)
         }

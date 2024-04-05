@@ -18,9 +18,16 @@ pub struct PatchVacancy {
 }
 
 #[derive(Deserialize)]
-pub struct Subscription {
+pub struct SubscriptionPayload {
     pub id: String,
     pub name: String,
+    pub passwd: String,
+    pub username: String,
+}
+
+#[derive(Deserialize)]
+pub struct LoginPayload {
+    pub id: String,
     pub passwd: String,
     pub username: String,
 }
