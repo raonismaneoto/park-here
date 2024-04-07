@@ -1,13 +1,14 @@
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, Request, State};
-use axum::http::header;
+use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Json, Response};
 use serde::Deserialize;
 
 use crate::app_state::AppState;
 use crate::parking::vacancies::vacancy::VacancyType;
 use crate::requests::payloads::{CreateVacancy, LoginPayload, PatchVacancy, SubscriptionPayload};
+use crate::AppError::error::AppError;
 
 #[derive(Deserialize)]
 pub struct SearchParams {
@@ -61,8 +62,8 @@ pub async fn search_vacancies_handler(
         .get_available_vacancies(latitute, longitude, VacancyType::from(t))
         .await;
     match maybe_vacancies {
-        Ok(vacancies) => Json(vacancies).into_response(),
-        Err(err) => Json(err.message()).into_response(),
+        Ok(vacancies) => (StatusCode::OK, Json(vacancies)).into_response(),
+        Err(err) => get_error_response(err),
     }
 }
 
@@ -92,7 +93,7 @@ pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Reque
             req.extensions_mut().insert(user);
             req
         }
-        Err(err) => req,
+        Err(err) => panic!("{}", err.in_short()),
     }
 }
 
@@ -103,8 +104,8 @@ pub async fn login_handler(
     let login_result = app_state.auth_service.login(payload).await;
 
     match login_result {
-        Ok(jwt) => Json(jwt).into_response(),
-        Err(err) => Json(err.message()).into_response(),
+        Ok(jwt) => (StatusCode::OK,  Json(jwt)).into_response(),
+        Err(err) =>  get_error_response(err)
     }
 }
 
@@ -115,7 +116,14 @@ pub async fn subscribe_handler(
     let sub_result = app_state.auth_service.subscribe(payload).await;
 
     match sub_result {
-        Ok(user) => Json(user).into_response(),
-        Err(err) => Json(err.message()).into_response(),
+        Ok(user) => (StatusCode::CREATED, Json(user)).into_response(),
+        Err(err) => get_error_response(err),
+    }
+}
+
+fn get_error_response(error: Box<dyn AppError>) -> Response {
+    match StatusCode::from_u16(error.status_code() as u16) {
+        Ok(status_code) => (status_code, Json(error.in_short())).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.in_short())).into_response()
     }
 }

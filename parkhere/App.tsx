@@ -21,16 +21,16 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen 
+              name="Login"
+              component={Login}
+            />
+            <Stack.Screen 
               name="Park Here"
               component={Home}
             />
             <Stack.Screen 
               name="Navigation"
               component={Navigation}
-            />
-            <Stack.Screen 
-              name="Login"
-              component={Login}
             />
             <Stack.Screen 
               name="Subscription"

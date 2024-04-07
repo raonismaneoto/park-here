@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Avatar, Button, Card, Dialog, Portal, Text, TextInput } from "react-native-paper";
 import * as Keychain from 'react-native-keychain';
 
-const Login = () => {
+const Login = ({navigation}: {navigation:any}) => {
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
 
@@ -12,14 +12,18 @@ const Login = () => {
     const hideDialog = () => setVisible(false);
 
     const sendLoginRequest = async () => {
-        console.log("being called");
         try {
             const resp = await axios.post(
                 'http://10.0.2.2:8000/api/park-here/login', 
                 {id: userName, username: userName, passwd: password}
             );
+
             console.log(resp);
-            Keychain.setGenericPassword(userName, resp.data)
+            
+            Keychain.setGenericPassword(userName, resp.data);
+            Keychain.setGenericPassword('current_user', userName);
+
+            navigation.push('Park Here');
         } catch (error) {
             console.log(error);
             setVisible(true);
