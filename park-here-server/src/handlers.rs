@@ -2,12 +2,16 @@ use std::sync::Arc;
 
 use axum::extract::{Path, Query, Request, State};
 use axum::http::{header, StatusCode};
+use axum::middleware::Next;
 use axum::response::{IntoResponse, Json, Response};
+use axum::Extension;
 use serde::Deserialize;
 
 use crate::app_state::AppState;
+use crate::auth::users::user::User;
 use crate::parking::vacancies::vacancy::VacancyType;
 use crate::requests::payloads::{CreateVacancy, LoginPayload, PatchVacancy, SubscriptionPayload};
+use crate::AppError::auth::{AuthError, AuthErrorStatusCode};
 use crate::AppError::error::AppError;
 
 #[derive(Deserialize)]
@@ -52,7 +56,13 @@ pub async fn patch_vacancy(
 pub async fn search_vacancies_handler(
     State(app_state): State<Arc<AppState>>,
     params: Query<SearchParams>,
+    Extension(maybe_current_user): Extension<Result<User, AuthError>>,
 ) -> Response {
+    match maybe_current_user {
+        Ok(user) => print!("{}", user),
+        Err(err) => return get_error_response(Box::new(err))
+    }
+
     let latitute = params.latitude;
     let longitude = params.longitude;
     let radius = params.radius;
@@ -74,14 +84,20 @@ pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Reque
         return req;
     }
 
-    let auth_header = req
+    let maybe_auth_header = req
         .headers()
         .get(header::AUTHORIZATION)
         .and_then(|header| header.to_str().ok());
 
-    let auth_header = match auth_header {
+    let auth_header = match maybe_auth_header {
         Some(v) => v,
-        None => return req,
+        None => {
+            req.extensions_mut().insert(Err::<User, AuthError>(AuthError {
+                message: Some(String::from("Missing authentication header")),
+                status_code: AuthErrorStatusCode::UNAUTHORIZED
+            }));
+            return req
+        }
     };
 
     match app_state
@@ -90,10 +106,16 @@ pub async fn auth_handler(State(app_state): State<Arc<AppState>>, mut req: Reque
         .await
     {
         Ok(user) => {
-            req.extensions_mut().insert(user);
+            req.extensions_mut().insert(Ok::<User, AuthError>(user));
             req
         }
-        Err(err) => panic!("{}", err.in_short()),
+        Err(err) => {
+            req.extensions_mut().insert(Err::<User, AuthError>(AuthError {
+                message: Some(String::from("Invalid authentication token")),
+                status_code: AuthErrorStatusCode::UNAUTHORIZED
+            }));
+            req
+        },
     }
 }
 
@@ -122,8 +144,24 @@ pub async fn subscribe_handler(
 }
 
 fn get_error_response(error: Box<dyn AppError>) -> Response {
+    print!("{}", error.status_code());
     match StatusCode::from_u16(error.status_code() as u16) {
         Ok(status_code) => (status_code, Json(error.in_short())).into_response(),
         Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.in_short())).into_response()
+    }
+}
+
+fn get_auth_extension(mut req: Request) -> Result<User, AuthError> {
+    match req.extensions_mut().get::<User>() {
+        Some(user) => Ok(user.clone()),
+        None => {
+            match req.extensions_mut().get::<AuthError>() {
+                Some(err) => Err(err.clone()),
+                None => Err(AuthError {
+                    message: Some(String::from("Authentication error")),
+                    status_code: AuthErrorStatusCode::UNAUTHORIZED
+                })
+            }
+        }
     }
 }

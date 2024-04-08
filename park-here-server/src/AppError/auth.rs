@@ -1,5 +1,6 @@
 use crate::AppError::error::AppError;
 
+#[derive(Clone)]
 pub enum AuthErrorStatusCode {
     UNAUTHORIZED = 401,
     FORBIDDEN = 403,
@@ -23,6 +24,7 @@ impl AuthErrorStatusCode {
     }
 }
 
+#[derive(Clone)]
 pub struct AuthError {
     pub message: Option<String>,
     pub status_code: AuthErrorStatusCode,

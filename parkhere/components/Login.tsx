@@ -17,15 +17,12 @@ const Login = ({navigation}: {navigation:any}) => {
                 'http://10.0.2.2:8000/api/park-here/login', 
                 {id: userName, username: userName, passwd: password}
             );
-
-            console.log(resp);
             
             Keychain.setGenericPassword(userName, resp.data);
             Keychain.setGenericPassword('current_user', userName);
 
             navigation.push('Park Here');
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
             setVisible(true);
         }
     };

@@ -94,7 +94,7 @@ impl AuthRepo {
             FROM 
                 app_user 
             WHERE
-                user_id = $1;",
+                id = $1;",
         );
 
         match self.storage.query(cmd, &[&user_id]).await {

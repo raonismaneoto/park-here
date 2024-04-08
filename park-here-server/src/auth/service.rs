@@ -55,6 +55,7 @@ impl AuthService {
     }
 
     pub async fn authorize(&self, jwt: String) -> Result<User, Box<dyn AppError>> {
+        print!("{}", jwt);
         let decoded = decode::<JWTPayload>(
             &jwt,
             &DecodingKey::from_secret(JWT_SECRET),
@@ -62,9 +63,11 @@ impl AuthService {
         );
 
         match decoded {
-            Ok(jwt) => self.repo.get_user(jwt.claims.sub).await,
+            Ok(token_data) => {
+                self.repo.get_user(token_data.claims.sub).await
+            },
             Err(err) => Err(Box::new(AuthError {
-                message: Some(String::from("Unauthorized. Invalid Token")),
+                message: Some(err.to_string()),
                 status_code: crate::AppError::auth::AuthErrorStatusCode::UNAUTHORIZED,
             })),
         }
@@ -110,8 +113,16 @@ struct JWTPayload {
 }
 
 fn create_jwt(uid: String) -> Result<String, DefaultAppError> {
+    let timestamp = match chrono::Duration::try_seconds(60) {
+        Some(value) => value,
+        None => return Err(DefaultAppError {
+            message: Some(String::from("unable to generate timestamp for the token")),
+            status_code: 500
+        })
+    };
+
     let expiration = Utc::now()
-        .checked_add_signed(chrono::Duration::seconds(60))
+        .checked_add_signed(timestamp)
         .expect("valid timestamp")
         .timestamp();
 
