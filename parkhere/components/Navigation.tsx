@@ -11,6 +11,8 @@ import { useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import axios from "axios";
+import * as Device from 'expo-device'
+import { noBodyRequest } from "../services/httpService"; 
 
 interface Region {
   latitude: number,
@@ -24,10 +26,11 @@ interface Vacancy {
   region: Region
 }
 
-const Navigation = () => {
+const Navigation = ({navigation}: {navigation:any}) => {
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObjectCoords>({latitude: 0, longitude: 0, altitude: null, accuracy: null, altitudeAccuracy: null,heading: null, speed: null});
   const [initialRegion, setInitialRegion] = useState<Region>({latitude: 0, longitude: 0, latitudeDelta: 0, longitudeDelta:0});
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
+  const [requestError, setRequestError] = useState<boolean>(false);
 
   const isCurrLocationSet = () => {
     return currentLocation.latitude !== 0 && currentLocation.longitude !== 0;
@@ -66,12 +69,12 @@ const Navigation = () => {
     const getVacancies = async () => {
       console.log("going to call the backend")
       try {
-        const response = await axios.get(`http://10.0.2.2:8000/api/park-here/vacancies/search?latitude=-11.301732&longitude=-41.85516&radius=0&vacancy_type=motorcycle`);
-        console.log(response.data);
-        setVacancies(response.data);
+        const resp = await noBodyRequest('GET', `vacancies/search?latitude=${currentLocation.latitude}&longitude=${currentLocation.longitude}&radius=0&vacancy_type=motorcycle`);
+        setVacancies(resp.response.data);
       } catch(error: any) {
+        setRequestError(true);
         console.log(error);
-        console.log(Object.keys(error));
+        navigation.push('Login');
       }
     };
 
@@ -79,32 +82,37 @@ const Navigation = () => {
   }, [currentLocation]);
 
   return (
-    <View style={styles.container}>
-      {isInitialRegionSet() && (
-        <MapView style={styles.map} initialRegion={initialRegion}>
-          <Marker 
-            key="main"
-            coordinate={{
-              latitude: initialRegion.latitude,
-              longitude: initialRegion.longitude,
-            }}
-            title="Your Location"
-          />
-          {isCurrLocationSet() && 
-            vacancies.map(vacancie => (
-              <Marker
-                key={vacancie.id}
-                coordinate={{
-                  latitude: vacancie.region.latitude,
-                  longitude: vacancie.region.longitude,
-                }}
-                title={`Vacancy ${vacancie.id} Location`}
-              />
-            ))
-          }
-        </MapView>
-      )}
-    </View>
+    <>
+      <View>
+        <Text>Error on retrieving data</Text>
+      </View>
+      <View style={styles.container}>
+        {isInitialRegionSet() && (
+          <MapView style={styles.map} initialRegion={initialRegion}>
+            <Marker 
+              key="main"
+              coordinate={{
+                latitude: initialRegion.latitude,
+                longitude: initialRegion.longitude,
+              }}
+              title="Your Location"
+            />
+            {isCurrLocationSet() && 
+              vacancies.map(vacancie => (
+                <Marker
+                  key={vacancie.id}
+                  coordinate={{
+                    latitude: vacancie.region.latitude,
+                    longitude: vacancie.region.longitude,
+                  }}
+                  title={`Vacancy ${vacancie.id} Location`}
+                />
+              ))
+            }
+          </MapView>
+        )}
+      </View>
+    </>
   );
 };
 

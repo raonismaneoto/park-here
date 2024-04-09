@@ -113,7 +113,7 @@ struct JWTPayload {
 }
 
 fn create_jwt(uid: String) -> Result<String, DefaultAppError> {
-    let timestamp = match chrono::Duration::try_seconds(60) {
+    let timestamp = match chrono::Duration::try_minutes(60) {
         Some(value) => value,
         None => return Err(DefaultAppError {
             message: Some(String::from("unable to generate timestamp for the token")),

@@ -15,6 +15,7 @@
     "axios": "^1.6.7",
     "expo": "^50.0.0",
     "expo-constants": "~15.4.5",
+    "expo-device": "^5.9.3",
     "expo-location": "^16.5.5",
     "maps": "^0.3.3",
     "react": "18.2.0",

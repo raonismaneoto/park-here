@@ -17,14 +17,6 @@ const Home = ({navigation}: {navigation:any}) => {
                 </View>
                 <View style={styles.button}>
                     <Button
-                        title="Subscription"
-                        onPress={() =>
-                            navigation.push('Subscription')
-                        }
-                    />
-                </View>
-                <View style={styles.button}>
-                    <Button
                         title="Vehicles"
                         onPress={() =>
                             navigation.push('VehiclesRegistration')

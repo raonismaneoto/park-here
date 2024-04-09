@@ -14,12 +14,11 @@ const Login = ({navigation}: {navigation:any}) => {
     const sendLoginRequest = async () => {
         try {
             const resp = await axios.post(
-                'http://10.0.2.2:8000/api/park-here/login', 
+                'http://localhost:8000/api/park-here/login', 
                 {id: userName, username: userName, passwd: password}
             );
-            
-            Keychain.setGenericPassword(userName, resp.data);
-            Keychain.setGenericPassword('current_user', userName);
+
+            await Keychain.setGenericPassword(userName, resp.data);
 
             navigation.push('Park Here');
         } catch (error: any) {
@@ -51,6 +50,9 @@ const Login = ({navigation}: {navigation:any}) => {
                         </Card.Content>
                         <Card.Actions>
                             <Button onPress={() => sendLoginRequest()}>Login</Button>
+                        </Card.Actions>
+                        <Card.Actions>
+                            <Button onPress={() => navigation.push('Subscription')}>Subscribe</Button>
                         </Card.Actions>
                     </Card>                
                 </ScrollView>
